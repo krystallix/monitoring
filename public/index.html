@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="asset/css/essentials.css">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/node-snackbar@latest/dist/snackbar.min.css" />
+    <title>Monitoring | Arbiteros</title>
+</head>
+<body>
+    <div class="modal" id="modal-comment" tabindex="-1">
+        <div class="modal-dialog  modal-dialog-centered">
+            <form id="comment-form" class="w-100" method="post">
+                <div class="modal-content px-2 py-1">
+                    <div class="modal-header bb-0 py-2">
+                        <h5 id="title-namaToken" class="modal-title text-uppercase fw-bold"></h5>
+                        <h5 id="title-kepanjangan" class="modal-title fw-bold"></h5>
+                    </div>
+                    <div class="modal-body py-1">
+                        <input type="hidden" id="modal-token-name" name="token_name">
+                        <div class="row">
+                            <div>
+                                <textarea name="comment" id="textarea-comment" placeholder="Add Comment for" cols="30" rows="5" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column pt-2">
+                            <form action="">
+                                <div class="p-2 d-flex">
+                                    <input type="radio" name="status_verif" value="1" class="verif-radio radio-val" id="01"><label class="px-2" for="01">Status Verified</label>
+                                </div>
+                                <div class="p-2 d-flex">
+                                    <input type="radio" name="status_verif" value="2" class="warning-radio radio-val" id="02"><label class="px-2" for="02">Status Warning</label>
+                                </div>
+                                <div class="p-2 d-flex">
+                                    <input type="radio" name="status_verif" value="3" class="unverif-radio radio-val" id="03"><label class="px-2" for="03">Status Unverified</label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer bt-0">
+                        <button type="button" class="btn btn-secondary btn-close-modal br-0" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="submit-comment" class="btn btn-primary br-0">Save changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="loading" class="loading-overlay hidden">
+        <div class="h-100 d-flex justify-content-center align-items-center">
+            <div>
+                <div class="half-circle-spinner mx-auto">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                </div>
+                <div class="py-2">
+                    <span class="text-dark fw-bold">
+                        Please wait y ges y
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="notification_1" src="asset/audio/notification_1.mp3"></audio>
+    <audio id="notification_2" src="asset/audio/notification_2.mp3"></audio>
+    <audio id="notification_3" src="asset/audio/notification_3.mp3"></audio>
+    
+    <div aria-live="polite" aria-atomic="true" id="parent-toast" class="position-relative" style="top: 40px;z-index: 99999;">
+        <div id="toast-container" class="toast-container position-absolute top-0 end-0 p-3 h-50" style="z-index: 99999;">
+            
+        </div>
+    </div>
+    <div class="container-fluid">
+        <nav class="navbar">
+            <div class="row w-100">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-6">
+                    
+                </div>
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-6">
+                    <div class="d-flex flex-row-reverse">
+                        <div class="px-2 notification-div">
+                            <i data-feather="bell"></i>
+                            <div class='notification-tab mt-2'>
+                                <div class='ul-title px-2'>
+                                    <p>Recent Notification</p>
+                                </div>
+                                <div id="notification-show" class="notification-show px-2">
+                                    
+                                </div>
+                            </div>
+                        </div>  
+                        <div class="px-2 volume-div">
+                            <i data-feather="volume-2"></i>
+                            <div class='volume-tab mt-2'>
+                                <div class='ul-title px-2'>
+                                    <p>Volume</p>
+                                </div>
+                                <div class="py-2">
+                                    <span class="range-value">0</span>
+                                    <div class="d-flex px-2 align-items-center">
+                                        <i data-feather="volume-1" class="pe-2"></i>
+                                        <input class="range" type="range" value="50" min="0" max="100" onChange="rangeSlide(this.value)" onmousemove="rangeSlide(this.value)"></input>
+                                        <i data-feather="volume-1" class="ps-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+            </div>
+        </nav>
+        <div class="mx-auto main-content">
+            <div class="row h-100 pb-3 position-relative">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12 col-12">
+                    <div class="card card-content px-4 py-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="h6 fw-normal">
+                                    LIST TOKEN
+                                </span>
+                            </div>
+                            <div class="d-flex float-end">
+                                <div class="px-1">
+                                    <button type="button" id="btn-default" data-id="default" class="btn px-2 btn-sort btn-sort-active">All</button>
+                                </div>
+                                <div class="px-1">
+                                    <button type="button" id="btn-verified" data-id="verified" class="btn px-2 btn-sort">Blue</button>
+                                </div>
+                                <div class="px-1">
+                                    <button type="button" id="btn-warning" data-id="warning" class="btn px-2 btn-sort">Yellow</button>
+                                </div>
+                                <div class="px-1">
+                                    <button type="button" id="btn-unverified" data-id="unverified" class="btn px-2 btn-sort">No Color</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- content list kiri  -->
+                        <div id="content-list-token" class="content-list mt-3 pb-2">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12 col-12 d-none d-md-block d-xl-block d-lg-block">
+                    <div class="row h-100">
+                        <div class="col-xl-1 col-lg-1 col-md-1 col-sm-1 col-1">
+                            <div class="d-flex align-items-center px-0 h-100" style="width: 30px;">
+                                <div id="compare-btn" class="compare-btn">
+                                    <i data-feather="play"  class=""></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-11 col-lg-11 col-md-11 col-sm-12 col-12" id="mid-section">
+                            <div class="d-flex flex-column h-100" id="content-mid">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 d-none d-md-block d-xl-block d-lg-block hidden" id="right-section">
+                    <form id="get-price" method="post" class="h-100">
+                        <input type="hidden" id="compare-name-token" name="token_name">
+                        <div class="card card-content px-4 py-2">
+                            <div class="d-flex justify-content-center mt-2">
+                                <div class="text-center">
+                                    <img src="" alt="" id="icon-token" class="icon-token px-1">
+                                    <span class="fw-normal h4 px-1 text-uppercase" id="token-name">
+                                        
+                                    </span>
+                                    <span class="singkatan h5 fw-normal px-1 mt-1" id="singkatan"></span>
+                                    <img src="" alt="" id="icon-network" class="icon-token px-1">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <span class="last-scan">
+                                    <i data-feather="clock" style="width: 15px; height: 15px;"></i>
+                                    <span class="last-scan-text fst-italic" id="last-scan-text">
+                                        
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="content-table-right mt-3" id="detail-right" style="font-size: 1.1rem;">
+                                
+                            </div>
+                            <div class="d-flex mt-1 justify-content-between">
+                                <div>
+                                    <a class="btn btn-detail-right btn-success" target="_blank" id="explorer1" href="">Explorer 1</a>
+                                </div>
+                                <div>
+                                    <a class="btn btn-detail-right btn-success" target="_blank" id="explorer2" href="">Explorer 2</a>
+                                </div>
+                                <div>
+                                    <a class="btn btn-detail-right btn-success" target="_blank" id="uniswap" href="">Uniswap</a>
+                                </div>
+                                <div>
+                                    <a class="btn btn-detail-right btn-success" target="_blank" id="marketcap" href="">Marketcap</a>
+                                </div>
+                                <div>
+                                    <button class="btn btn-detail-right btn-danger" type="submit">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-xl-8-5 col-lg-8-5 col-md-8-5 col-sm-12 col-12 position-absolute hidden" id="comparizon-section" style="right: 2px;z-index: 8888; height: 98.2% !important;">
+                    <div id="loading-compare" class="loading-overlay-compare hidden">
+                        <div class="h-100 d-flex justify-content-center align-items-center">
+                            <div>
+                                <div class="half-circle-spinner mx-auto">
+                                    <div class="circle circle-1"></div>
+                                    <div class="circle circle-2"></div>
+                                </div>
+                                <div class="py-2">
+                                    <span class="text-dark fw-bold">
+                                        Please wait y ges y
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row h-100">
+                        <div class="col-8">
+                            <div class="card h-100 px-3 py-2">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <span class="h5">Token</span>
+                                    </div>
+                                    <div>
+                                        <i data-feather="x"></i>
+                                    </div>
+                                </div>
+                                <div class="row py-3">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="bo_1_jml_kolom" id="bo_1_jml_kolom" class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_1_price" id="bo_1_price" id=""  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_1_amount" id="bo_1_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_1_pair" id="bo_1_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="bo_1_str_kotor"  class="form-control" name="bo_1_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="so_1_jml_kolom" id="so_1_jml_kolom"  class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_1_price" id="so_1_price"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_1_amount" id="so_1_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_1_pair" id="so_1_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="so_1_str_kotor"  class="form-control" name="so_1_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row py-3">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="bo_2_jml_kolom" id="bo_2_jml_kolom"  class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_2_price" id="bo_2_price"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_2_amount" id="bo_2_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_2_pair" id="bo_2_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="bo_2_str_kotor"  class="form-control" name="bo_2_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="so_2_jml_kolom" id="so_2_jml_kolom"  class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_2_price" id="so_2_price"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_2_amount" id="so_2_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_2_pair" id="so_2_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="so_2_str_kotor"  class="form-control" name="so_2_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row py-3">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="bo_3_jml_kolom" id="bo_3_jml_kolom"  class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_3_price" id="bo_3_price"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_3_amount" id="bo_3_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="bo_3_pair" id="bo_3_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="bo_3_str_kotor"  class="form-control" name="bo_3_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            <div class="px-1">
+                                                <input type="text" name="so_3_jml_kolom" id="so_3_jml_kolom"  class="form-control form-control-sm input-compare" value="3">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_3_price" id="so_3_price"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_3_amount" id="so_3_amount"  class="form-control form-control-sm input-compare" value="2">
+                                            </div>
+                                            <div class="px-1">
+                                                Pair:
+                                            </div>
+                                            <div class="px-1">
+                                                <input type="text" name="so_3_pair" id="so_3_pair"  class="form-control form-control-sm input-compare" value="1">
+                                            </div>
+                                        </div>
+                                        <div class="px-1 pt-2">
+                                            <textarea id="so_3_str_kotor"  class="form-control" name="so_3_str_kotor" id="buy_1" cols="30" rows="6" draggable="false" style="resize: none; border-radius: 0;"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="input-group mb-3 px-1 pt-2">
+                                    <input type="text" class="form-control b-r-0" id="fee" placeholder="Fee" name="fee" aria-label="Fee" style="border-radius: 0;">
+                                    <div class="input-group-append">
+                                        <input type="submit" id="submit-comparizon-form" value="Submit" class="btn bg-primary text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 h-100">
+                            <div class="card h-100">
+                                
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.min.js" integrity="sha512-UR25UO94eTnCVwjbXozyeVd6ZqpaAE9naiEUBK/A+QDbfSTQFhPGj5lOR6d8tsgbBk84Ggb5A3EkjsOgPRPcKA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/node-snackbar@latest/src/js/snackbar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" src="asset/js/function.js" async></script>
+<script type="text/javascript" src="asset/js/list_token.js"></script>
+<script type="text/javascript" src="asset/js/detail.js"></script>
+<script type="text/javascript" src="asset/js/notification.js"></script>
+<script type="text/javascript" src="asset/js/comment.js"></script>
+<script type="text/javascript" src="asset/js/comparizon.js"></script>
+<script>
+    feather.replace()
+    function rangeSlide(value) {
+        $(".range-value").text(value)
+        localStorage.setItem("v", value)
+        $('#notification_1').prop("volume", value);
+        $('#notification_2').prop("volume", value);
+        $('#notification_3').prop("volume", value);
+    }
+    $(document).ready(function(){
+        value = localStorage.getItem("v")
+        $(".range-value").text(value)
+        $(".range").val(value)
+        $('#notification_1').prop("volume", value);
+        $('#notification_2').prop("volume", value);
+        $('#notification_3').prop("volume", value);
+    })
+</script>
+</html>
